@@ -1,0 +1,96 @@
+import pygame
+import sys
+
+# Initialize pygame
+pygame.init()
+
+# Constants
+WIDTH, HEIGHT = 800, 600
+FPS = 60
+GRAVITY = 0.8
+
+# Colors
+WHITE = (255, 255, 255)
+BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
+BROWN = (139, 69, 19)
+
+# Screen setup
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Super Mario Bros Clone")
+
+# Clock setup
+clock = pygame.time.Clock()
+
+# Player class
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((50, 50))
+        self.image.fill(BLUE)
+        self.rect = self.image.get_rect()
+        self.rect.x = 100
+        self.rect.y = HEIGHT - 150
+        self.vel_y = 0
+        self.speed = 5
+        self.is_jumping = False
+
+    def update(self):
+        # Horizontal movement
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            self.rect.x -= self.speed
+        if keys[pygame.K_RIGHT]:
+            self.rect.x += self.speed
+
+        # Gravity
+        if self.rect.y + self.rect.height < HEIGHT:
+            self.vel_y += GRAVITY
+        else:
+            self.vel_y = 0
+            self.rect.y = HEIGHT - self.rect.height
+
+        self.rect.y += self.vel_y
+
+        # Jumping
+        if self.is_jumping:
+            self.vel_y = -15
+            self.is_jumping = False
+
+    def jump(self):
+        if self.rect.y == HEIGHT - self.rect.height:
+            self.is_jumping = True
+
+# Create sprite groups
+all_sprites = pygame.sprite.Group()
+player = Player()
+all_sprites.add(player)
+
+# Main game loop
+while True:
+    # Event handling
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                player.jump()
+
+    # Update game objects
+    all_sprites.update()
+
+    # Drawing everything
+    screen.fill(WHITE)
+    
+    # Draw the ground
+    pygame.draw.rect(screen, BROWN, (0, HEIGHT - 50, WIDTH, 50))
+    
+    # Draw sprites
+    all_sprites.draw(screen)
+
+    # Update the display
+    pygame.display.flip()
+
+    # Maintain frame rate
+    clock.tick(FPS)
